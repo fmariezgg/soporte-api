@@ -1,0 +1,45 @@
+{
+  "info": {
+    "name": "Soporte API",
+    "description": "GET list, POST valid, POST invalid. Run in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:8080" }],
+  "item": [
+    {
+      "name": "GET solicitudes",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('200 OK', () => pm.response.to.have.status(200));",
+        "pm.test('is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+      ] } }],
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/solicitudes" }
+    },
+    {
+      "name": "POST solicitud valida",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('201 Created', () => pm.response.to.have.status(201));",
+        "pm.test('Location header', () => pm.expect(pm.response.headers.has('Location')).to.be.true);",
+        "pm.test('estado Pendiente', () => pm.expect(pm.response.json().estado).to.eql('Pendiente'));"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/solicitudes",
+        "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"Red caida en laboratorio\",\n  \"prioridad\": \"Alta\"\n}" }
+      }
+    },
+    {
+      "name": "POST solicitud invalida",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+        "pm.test('messages present', () => pm.expect(pm.response.json().messages).to.be.an('array').that.is.not.empty);"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/solicitudes",
+        "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"   \",\n  \"prioridad\": \"Urgente\"\n}" }
+      }
+    }
+  ]
+}
